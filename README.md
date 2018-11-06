@@ -1,2 +1,2 @@
-# ppb
+# BUMP
 Portable package builder
