@@ -1,30 +1,84 @@
+#include <experimental/filesystem>
 #include <string_view>
-#include <filesystem>
+#include <fstream>
 
 #include <config.h>
 #include <journal.h>
 #include <xargs.hpp>
 
-volatile int log_level;
+volatile int log_level = DEFAULT_LOG_LEVEL;
 
-namespace fs = std::filesystem;
+namespace app {
 
-auto dispatch_command( std::string_view command ) {
+    constexpr char APP_TAG[] = "bump";
 
-    if ( command == "init" ) {
+    namespace fs = std::experimental::filesystem;
+
+    auto create_file(const std::string_view path) {
+        std::ofstream ofs{path.data()};
+        ofs.close();
+
+        return fs::exists( path );
     }
 
-    if ( command == "build" ) {
+    auto default_init( std::string_view project_name ) {
+        auto cur_path = fs::current_path( );
+
+        const auto src_path = cur_path / project_name / "/src";
+        const auto include_path = cur_path / project_name / "/include";
+        const auto external_path = cur_path / project_name / "/external";
+        const auto packages_path = cur_path / project_name / "/.packages";
+        const auto project_info_path = cur_path / project_name / ".bump";
+
+        bool res = true;
+        res &= fs::create_directory( cur_path / project_name );
+        res &= fs::create_directory( src_path );
+        res &= fs::create_directory( include_path );
+        res &= fs::create_directory( external_path );
+        res &= fs::create_directory( packages_path );
+        res &= create_file( project_info_path.c_str() );
+
+        return res;
     }
 
-    if ( command == "install" ) {
+    auto invalid_command( const std::string_view command ) {
+        LOG_ERROR( APP_TAG, "Invalid command %1", command );
+        exit(EXIT_FAILURE);
     }
 
-    if ( command == "search" ) {
+    auto failed_command( const std::string_view command, const std::string_view reason ) {
+        LOG_ERROR( APP_TAG, "Command %1 failed : '%2'", command, reason );
+        exit(EXIT_FAILURE);
     }
 
-    return 0;
-}
+    auto dispatch_command( std::string_view command, std::string_view arguments ) {
+        if ( command == "init" ) {
+            if ( !arguments.empty( ) ) {
+                if ( default_init( arguments ) )
+                    return EXIT_SUCCESS;
+
+                failed_command( command, "Can't create directories and files" );
+            }
+        }
+
+        if ( command == "build" ) {
+            return EXIT_SUCCESS;
+        }
+
+        if ( command == "install" ) {
+            return EXIT_SUCCESS;
+        }
+
+        if ( command == "search" ) {
+            return EXIT_SUCCESS;
+        }
+
+        invalid_command( command );
+
+        return EXIT_FAILURE;
+    }
+
+} // namespace app
 
 extern int main( int argc, char *argv[] ) {
 
@@ -42,16 +96,18 @@ extern int main( int argc, char *argv[] ) {
                          exit( EXIT_SUCCESS );
                      } )
         .add_option( "-v", "Version", [&]( ) {
-            fprintf( stdout, "%s %s\n", APP_NAME, APP_VERSION );
+            fprintf(stdout, "%s %s\n", APP_NAME, APP_VERSION );
             exit( EXIT_SUCCESS );
         } );
 
     args.dispath( argc, argv );
 
-    if ( static_cast<size_t>( argc ) < args.count( ) ) {
+    if ( static_cast<size_t>( argc ) < 2 ) {
         puts( args.usage( argv[0] ).c_str( ) );
         return EXIT_SUCCESS;
     }
 
-    return dispatch_command( command );
+    LOG_DEBUG( app::APP_TAG, "Running command: %1 %2", command, arguments );
+
+    return app::dispatch_command( command, arguments );
 }

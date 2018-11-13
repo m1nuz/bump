@@ -30,17 +30,14 @@ target_compile_definitions(${APP_NAME} PUBLIC ${APP_DEFINES})
 
 if (UNIX)
     target_compile_options(${APP_NAME} PUBLIC
-        $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>
+#        $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>
+        -std=c++17
         -pthread
         -pedantic
         -Wall
         -Wextra
         -Wshadow
-        -Wpointer-arith
-        -Wcast-qual
-        -Wunused-result
 #        -Werror
-        -lstdc++fs
         )
 elseif (MSVC)
     target_compile_options(${APP_NAME} PUBLIC
@@ -51,6 +48,7 @@ endif()
 
 target_link_libraries(${APP_NAME} PUBLIC
     ${APP_LIBRARIES}
+    stdc++fs
 )
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION ${INSTALL_DIR})
