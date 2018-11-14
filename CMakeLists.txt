@@ -23,6 +23,7 @@ set_target_properties(${APP_NAME} PROPERTIES
 target_include_directories(${APP_NAME} PUBLIC
     ${SHARED_INCLUDE_DIR}
     ${APP_INCLUDES}
+    ${YAMLPP_INCLUDE_DIRS}
     external
 )
 
@@ -48,6 +49,7 @@ endif()
 
 target_link_libraries(${APP_NAME} PUBLIC
     ${APP_LIBRARIES}
+    ${YAMLPP_LIBRARIES}
     stdc++fs
 )
 

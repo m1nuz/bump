@@ -6,16 +6,29 @@
 #include <journal.h>
 #include <xargs.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 volatile int log_level = DEFAULT_LOG_LEVEL;
 
 namespace app {
 
     constexpr char APP_TAG[] = "bump";
+    constexpr char DEFAULT_BUMP_FILE[] = ".bump.yml";
 
     namespace fs = std::experimental::filesystem;
 
-    auto create_file(const std::string_view path) {
+    auto create_bump_file( const std::string_view path, const std::string_view root_target ) {
+        YAML::Emitter out;
+        out << YAML::BeginMap;
+        out << YAML::Key << "build";
+        out << YAML::Value << root_target.data();
+        out << YAML::BeginMap;
+        out << YAML::Key << "sources";
+        out << YAML::EndMap;
+        out << YAML::EndMap;
+
         std::ofstream ofs{path.data()};
+        ofs.write(out.c_str(), out.size());
         ofs.close();
 
         return fs::exists( path );
@@ -28,7 +41,7 @@ namespace app {
         const auto include_path = cur_path / project_name / "/include";
         const auto external_path = cur_path / project_name / "/external";
         const auto packages_path = cur_path / project_name / "/.packages";
-        const auto project_info_path = cur_path / project_name / ".bump";
+        const auto project_info_path = cur_path / project_name / DEFAULT_BUMP_FILE;
 
         bool res = true;
         res &= fs::create_directory( cur_path / project_name );
@@ -36,9 +49,17 @@ namespace app {
         res &= fs::create_directory( include_path );
         res &= fs::create_directory( external_path );
         res &= fs::create_directory( packages_path );
-        res &= create_file( project_info_path.c_str() );
+        res &= create_bump_file( project_info_path.c_str(), project_name );
 
         return res;
+    }
+
+    auto build_target( const std::string_view target ) {
+        if ( target.empty() ) {
+
+        } else {
+
+        }
     }
 
     auto invalid_command( const std::string_view command ) {
@@ -62,6 +83,8 @@ namespace app {
         }
 
         if ( command == "build" ) {
+            auto bump_conf = YAML::LoadFile( DEFAULT_BUMP_FILE );
+
             return EXIT_SUCCESS;
         }
 
