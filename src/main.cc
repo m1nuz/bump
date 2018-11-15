@@ -22,9 +22,8 @@ namespace app {
         out << YAML::BeginMap;
         out << YAML::Key << "build";
         out << YAML::Value << root_target.data();
-        out << YAML::BeginMap;
         out << YAML::Key << "sources";
-        out << YAML::EndMap;
+        out << YAML::Value << YAML::BeginSeq << "all" << YAML::EndSeq;
         out << YAML::EndMap;
 
         std::ofstream ofs{path.data()};
@@ -35,16 +34,16 @@ namespace app {
     }
 
     auto default_init( std::string_view project_name ) {
-        auto cur_path = fs::current_path( );
+        auto curr_path = fs::current_path( );
 
-        const auto src_path = cur_path / project_name / "/src";
-        const auto include_path = cur_path / project_name / "/include";
-        const auto external_path = cur_path / project_name / "/external";
-        const auto packages_path = cur_path / project_name / "/.packages";
-        const auto project_info_path = cur_path / project_name / DEFAULT_BUMP_FILE;
+        const auto src_path = curr_path / project_name / "/src";
+        const auto include_path = curr_path / project_name / "/include";
+        const auto external_path = curr_path / project_name / "/external";
+        const auto packages_path = curr_path / project_name / "/.packages";
+        const auto project_info_path = curr_path / project_name / DEFAULT_BUMP_FILE;
 
         bool res = true;
-        res &= fs::create_directory( cur_path / project_name );
+        res &= fs::create_directory( curr_path / project_name );
         res &= fs::create_directory( src_path );
         res &= fs::create_directory( include_path );
         res &= fs::create_directory( external_path );
@@ -54,9 +53,9 @@ namespace app {
         return res;
     }
 
-    auto build_target( const std::string_view target ) {
-        if ( target.empty() ) {
-
+    auto build_target( YAML::Node &conf, const std::string_view target ) {
+        if ( !target.empty() ) {
+            const auto target_sources = conf["sources"].as<std::vector<std::string>>();
         } else {
 
         }
@@ -83,7 +82,15 @@ namespace app {
         }
 
         if ( command == "build" ) {
-            auto bump_conf = YAML::LoadFile( DEFAULT_BUMP_FILE );
+            const auto conf_path = fs::current_path( ).string() + '/' + DEFAULT_BUMP_FILE;
+
+            if ( fs::exists(conf_path) ) {
+                auto conf = YAML::LoadFile( conf_path );
+
+                const auto root_target = conf["build"].as<std::string>();
+
+                build_target( conf, root_target );
+            }
 
             return EXIT_SUCCESS;
         }

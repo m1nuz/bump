@@ -13,6 +13,7 @@ set(SOURCES src/main.cc)
 configure_file("${SHARED_INCLUDE_DIR}/config.h.in" "${SHARED_INCLUDE_DIR}/config.h")
 
 add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
+add_dependencies(${APP_NAME} yaml-cpp)
 
 set_target_properties(${APP_NAME} PROPERTIES
     CXX_STANDARD 17

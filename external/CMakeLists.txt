@@ -17,10 +17,8 @@ ExternalProject_Add(
     PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp
     GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
     GIT_TAG yaml-cpp-0.6.2
-    #CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
     INSTALL_DIR ""
-    #BUILD_COMMAND make
-    #INSTALL_COMMAND make install
+    INSTALL_COMMAND ""
     )
 
 ExternalProject_Get_Property(yaml-cpp BINARY_DIR)
