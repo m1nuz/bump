@@ -15,6 +15,8 @@ namespace app {
     constexpr char APP_TAG[] = "bump";
     constexpr char DEFAULT_BUMP_FILE[] = ".bump.yml";
 
+    constexpr char OPT_BINARY[] = "--bin";
+
     namespace fs = std::experimental::filesystem;
 
     auto create_bump_file( const std::string_view path, const std::string_view root_target ) {
@@ -53,8 +55,16 @@ namespace app {
         return res;
     }
 
-    auto build_target( YAML::Node &conf, const std::string_view target ) {
-        if ( !target.empty() ) {
+    auto create_target_binary( const std::string_view target_name ) {
+
+    }
+
+    auto create_target_library( const std::string_view target_name ) {
+
+    }
+
+    auto build_target( YAML::Node &conf, const std::string_view target_name ) {
+        if ( !target_name.empty() ) {
             const auto target_sources = conf["sources"].as<std::vector<std::string>>();
         } else {
 
@@ -71,7 +81,7 @@ namespace app {
         exit(EXIT_FAILURE);
     }
 
-    auto dispatch_command( std::string_view command, std::string_view arguments ) {
+    auto dispatch_command( std::string_view command, std::string_view arguments, std::vector<std::string> options ) {
         if ( command == "init" ) {
             if ( !arguments.empty( ) ) {
                 if ( default_init( arguments ) )
@@ -92,6 +102,16 @@ namespace app {
                 build_target( conf, root_target );
             }
 
+            return EXIT_SUCCESS;
+        }
+
+        if ( command == "new" ) {
+
+
+            return EXIT_SUCCESS;
+        }
+
+        if ( command == "show" ) {
             return EXIT_SUCCESS;
         }
 
@@ -116,19 +136,22 @@ extern int main( int argc, char *argv[] ) {
 
     string command;
     string arguments;
+    vector<string> options;
 
     xargs::args args;
-    args.add_arg( "<command>", "Command", [&]( const auto &v ) { command = v; } )
-        .add_arg( "<args>", "Arguments", [&]( const auto &v ) { arguments = v; } )
-        .add_option( "-h", "Display help",
-                     [&]( ) {
-                         puts( args.usage( argv[0] ).c_str( ) );
-                         exit( EXIT_SUCCESS );
-                     } )
-        .add_option( "-v", "Version", [&]( ) {
-            fprintf(stdout, "%s %s\n", APP_NAME, APP_VERSION );
-            exit( EXIT_SUCCESS );
-        } );
+    args.add_arg( "<command>", "Command", [&]( const auto &v ) {
+        command = v;
+    } ).add_arg( "<args>", "Arguments", [&]( const auto &v ) {
+        arguments = v;
+    } ).add_option( "-h", "Display help", [&]( ) {
+        puts( args.usage( argv[0] ).c_str( ) );
+        exit( EXIT_SUCCESS );
+    } ).add_option( "-v", "Version", [&]( ) {
+        fprintf(stdout, "%s %s\n", APP_NAME, APP_VERSION );
+        exit( EXIT_SUCCESS );
+    } ).add_option( app::OPT_BINARY, "Binary", [&]( ) {
+        options.push_back( app::OPT_BINARY );
+    });
 
     args.dispath( argc, argv );
 
@@ -137,7 +160,7 @@ extern int main( int argc, char *argv[] ) {
         return EXIT_SUCCESS;
     }
 
-    LOG_DEBUG( app::APP_TAG, "Running command: %1 %2", command, arguments );
+    LOG_DEBUG( app::APP_TAG, "Running command: %1 %2 %3", command, arguments, options );
 
-    return app::dispatch_command( command, arguments );
+    return app::dispatch_command( command, arguments, options );
 }

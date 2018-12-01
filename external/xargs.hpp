@@ -10,12 +10,14 @@
 namespace xargs {
     struct args {
         typedef std::function<void ()> handler_no_value_type;
-        typedef std::function<void (const std::string& v)> handler_type;
+        typedef std::function<void (const std::string& v)> handler_arg_type;
+        using handler_args_type = std::function<void (const std::vector<std::string>& v)>;
         typedef std::tuple<std::string, std::string, handler_no_value_type> option_no_value_type;
-        typedef std::tuple<std::string, std::string, handler_type> options_type;
-        typedef std::tuple<std::string, std::string, handler_type> arg_type;
+        typedef std::tuple<std::string, std::string, handler_arg_type> options_type;
+        typedef std::tuple<std::string, std::string, handler_arg_type> arg_type;
+        typedef std::tuple<std::string, std::vector<std::string>> args_type;
 
-        args& add_option(const std::string &opt, const std::string &help, handler_type h) {
+        args& add_option(const std::string &opt, const std::string &help, handler_arg_type h) {
             options_with_values.emplace_back(std::make_tuple(opt, help, h));
             return *this;
         }
@@ -25,10 +27,14 @@ namespace xargs {
             return *this;
         }
 
-        args& add_arg(const std::string &arg, const std::string &desc, handler_type h) {
+        args& add_arg(const std::string &arg, const std::string &desc, handler_arg_type h) {
             all_args.emplace_back(std::make_tuple(arg, desc, h));
             args_usage.push_back(false);
             return *this;
+        }
+
+        args& add_args(const std::string &args, const std::string &desc, handler_args_type h) {
+
         }
 
         auto count() const {
@@ -60,7 +66,7 @@ namespace xargs {
                 }
             }
 
-            for (int i = p; i < argc; i++) {
+            for (int i = 1; i < argc; i++) {
                 for (size_t j = 0; j < all_args.size(); j++)
                     if (!args_usage[j]) {
                         std::get<2>(all_args[j])(argv[i]);
@@ -101,6 +107,7 @@ namespace xargs {
         std::vector<option_no_value_type> options_no_values;
         std::vector<options_type> options_with_values;
         std::vector<arg_type> all_args;
+        args_type other_args;
         std::vector<bool> args_usage;
     };
 }
