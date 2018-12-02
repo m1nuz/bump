@@ -1,3 +1,17 @@
 constexpr char APP_NAME[] = "${APP_NAME}";
 constexpr char APP_VERSION[] = "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}";
 
+constexpr char APP_TAG[] = "bump";
+constexpr char DEFAULT_BUMP_FILE[] = ".bump.yml";
+constexpr char OPT_BINARY[] = "--bin";
+constexpr char OPT_LIBRARY[] = "--lib";
+
+
+constexpr char CMD_INIT[] = "init";
+constexpr char CMD_BUILD[] = "build";
+constexpr char CMD_NEW[] = "new";
+constexpr char CMD_ADD[] = "add";
+constexpr char CMD_SHOW[] = "show";
+constexpr char CMD_INSTALL[] = "install";
+constexpr char CMD_HELP[] = "help";
+constexpr char CMD_SEARCH[] = "search";

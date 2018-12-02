@@ -1,5 +1,11 @@
 set(APP_NAME bump)
-set(SOURCES bump_main.cc)
+set(SOURCES
+    help.cc
+    build.cc
+    init.cc
+    search.cc
+    new.cc
+    main.cc)
 
 configure_file("${SHARED_INCLUDE_DIR}/config.h.in" "${SHARED_INCLUDE_DIR}/config.h")
 

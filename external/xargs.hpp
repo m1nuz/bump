@@ -33,8 +33,8 @@ namespace xargs {
             return *this;
         }
 
-        args& add_args(const std::string &args, const std::string &desc, handler_args_type h) {
-
+        args& add_args(const std::string &arg_list, const std::string &desc, handler_args_type h) {
+            return *this;
         }
 
         auto count() const {
