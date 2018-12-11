@@ -3,6 +3,7 @@
 #include <string_view>
 
 #include <config.h>
+#include <journal.h>
 #include <yaml-cpp/yaml.h>
 
 #include "common.h"
@@ -13,13 +14,25 @@ namespace app {
 
     namespace commands {
 
-        auto create_bump_file( const std::string_view path, const std::string_view root_target ) {
+        auto create_empty_bump_file( const std::string_view path, const std::string_view project_name ) {
+
+            if ( path.empty( ) ) {
+                LOG_ERROR( APP_TAG, "%1", "Path is empty" );
+                return false;
+            }
+
+            if ( project_name.empty() ) {
+                LOG_ERROR( APP_TAG, "%1", "Project name is empty" );
+                return false;
+            }
+
+            std::string empty_string;
+
             YAML::Emitter out;
             out << YAML::BeginMap;
+            out << YAML::Key << "project" << YAML::Value << project_name.data( );
             out << YAML::Key << "build";
-            out << YAML::Value << root_target.data( );
-            out << YAML::Key << "sources";
-            out << YAML::Value << YAML::BeginSeq << "all" << YAML::EndSeq;
+            out << YAML::Value << YAML::BeginSeq << YAML::EndSeq;
             out << YAML::EndMap;
 
             std::ofstream ofs{path.data( )};
@@ -44,7 +57,7 @@ namespace app {
             res &= fs::create_directory( include_path );
             res &= fs::create_directory( external_path );
             res &= fs::create_directory( packages_path );
-            res &= create_bump_file( project_info_path.c_str( ), project_name );
+            res &= create_empty_bump_file( project_info_path.c_str( ), project_name );
 
             return res;
         }

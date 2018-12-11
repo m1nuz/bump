@@ -1,10 +1,10 @@
-#include <experimental/filesystem>
 #include <algorithm>
+#include <experimental/filesystem>
 #include <string_view>
 
-#include <yaml-cpp/yaml.h>
 #include <config.h>
 #include <journal.h>
+#include <yaml-cpp/yaml.h>
 
 namespace fs = std::experimental::filesystem;
 
@@ -13,6 +13,7 @@ namespace app {
     namespace commands {
 
         std::string cxx_compiller = "/usr/bin/gcc";
+        std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};
 
         auto sys_exec( std::string_view cmd ) {
             using namespace std;
@@ -47,34 +48,54 @@ namespace app {
             return files;
         }
 
-        auto build_target( YAML::Node &conf, const std::string_view target, const std::string_view target_path ) -> bool {
+        auto build_target( const YAML::Node &conf, const std::string_view target_path, const std::string_view build_path ) -> bool {
             using namespace std;
 
-            if ( !target.empty( ) ) {
-                const auto target_sources = conf["sources"].as<vector<string>>( );
-                if ( target_sources.empty( ) ) {
-                    LOG_ERROR( APP_TAG, "Nothing to build for target %1", target.data( ) );
-                    return false;
+            const auto curr_dir = fs::current_path( );
+
+            if ( !build_path.empty( ) ) {
+                fs::current_path( build_path );
+
+                const auto target_name = conf["name"].as<string>( );
+
+                vector<string> target_sources;
+                vector<string> target_files;
+
+                if ( conf["sources"].IsScalar( ) ) {
+                    const auto sources_value = conf["sources"].as<string>( );
+                    if ( sources_value == "all" ) {
+                        const auto &extensions = cxx_extensions;
+                        target_sources = get_directory_files( string{target_path} + fs::path::preferred_separator + "src" +
+                                                                  fs::path::preferred_separator + target_name,
+                                                              extensions );
+                    }
+
+                    target_files = target_sources;
+                } else if ( conf["sources"].IsSequence( ) ) {
+                    target_sources = conf["sources"].as<vector<string>>( );
+                } else {
+                    LOG_ERROR( APP_TAG, "Nothing to build for target %1", target_name );
                 }
 
-                const auto extensions = std::vector<std::string>{".cpp", ".cxx", ".cc"};
-                const auto files = get_directory_files( string{target_path} + fs::path::preferred_separator + "src", extensions );
-
-                for ( const auto &f : files ) {
+                for ( const auto &f : target_files ) {
                     const auto command = cxx_compiller + " -c " + f;
+
+                    LOG_INFO( APP_TAG, "Compile: %1", f );
 
                     const auto res = sys_exec( command );
                     if ( res.empty( ) ) {
                     }
                 }
 
+                fs::current_path( curr_dir );
+
                 return true;
-            } else {
             }
+
+            LOG_ERROR( APP_TAG, "%1", "No build directory" );
 
             return false;
         }
-
 
         auto build_all( std::string_view arguments ) {
 
@@ -84,12 +105,25 @@ namespace app {
             if ( fs::exists( conf_path ) ) {
                 auto conf = YAML::LoadFile( conf_path );
 
-                fs::create_directory( target_path + fs::path::preferred_separator + "build" );
+                const auto build_path = target_path + fs::path::preferred_separator + "build";
 
-                const auto root_target = conf["build"].as<std::string>( );
+                fs::create_directory( build_path );
 
-                build_target( conf, root_target, target_path );
+                const auto project_name = conf["project"].as<std::string>( );
+
+                LOG_INFO( APP_TAG, "Build '%1'", project_name );
+
+                auto root_targets = conf["build"];
+                for ( const auto &target : root_targets ) {
+                    build_target( target, target_path, build_path );
+                }
+
+                LOG_INFO( APP_TAG, "Build '%1' done", project_name );
+
+                return true;
             }
+
+            LOG_ERROR( APP_TAG, "%1", "No config for build" );
 
             return false;
         }
