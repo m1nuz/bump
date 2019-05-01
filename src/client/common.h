@@ -4,9 +4,9 @@
 
 namespace common {
 
-    inline std::string SOURCE_DIR = "/src";
-    inline std::string INCLUDE_DIR = "/include";
-    inline std::string EXTERNAL_DIR = "/external";
-    inline std::string PACKAGE_DIR = "/.package";
+    constexpr char SOURCE_DIR[] = "/src";
+    constexpr char INCLUDE_DIR[] = "/include";
+    constexpr char EXTERNAL_DIR[] = "/external";
+    constexpr char PACKAGE_DIR[] = "/.package";
 
 } // namespace common

@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "common.h"
+#include "context.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -36,13 +37,15 @@ namespace app {
             out << YAML::EndMap;
 
             std::ofstream ofs{path.data( )};
-            ofs.write( out.c_str( ), out.size( ) );
+            ofs.write( out.c_str( ), static_cast<ptrdiff_t>(out.size( )) );
             ofs.close( );
 
             return fs::exists( path );
         }
 
-        auto default_init( std::string_view project_name ) {
+        auto default_init( context& ctx, std::string_view project_name ) {
+            (void)ctx;
+
             auto curr_path = fs::current_path( );
 
             const auto src_path = curr_path / project_name / common::SOURCE_DIR;

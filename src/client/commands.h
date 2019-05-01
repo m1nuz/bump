@@ -5,6 +5,8 @@
 
 namespace app {
 
+    struct context;
+
     namespace commands {
 
         auto invalid_command( const std::string_view command ) {
@@ -17,10 +19,11 @@ namespace app {
             exit( EXIT_FAILURE );
         }
 
-        auto default_init( std::string_view project_name ) -> bool;
+        auto default_init( context &ctx, std::string_view project_name ) -> bool;
         auto create_target( const std::string_view target_name ) -> bool;
         auto search_package( const std::string_view package_name ) -> bool;
-        auto build_all( std::string_view arguments ) -> bool;
+        auto build_all( context &ctx, std::string_view arguments ) -> bool;
+        auto clean_all( context &ctx ) -> bool;
         auto help( std::string_view args ) -> bool;
 
     } // namespace commands

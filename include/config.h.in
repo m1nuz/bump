@@ -15,3 +15,5 @@ constexpr char CMD_SHOW[] = "show";
 constexpr char CMD_INSTALL[] = "install";
 constexpr char CMD_HELP[] = "help";
 constexpr char CMD_SEARCH[] = "search";
+constexpr char CMD_CLEAN[] = "clean";
+constexpr char CMD_CLEAN_ALL[] = "clean-all";

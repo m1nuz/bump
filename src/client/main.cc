@@ -7,13 +7,14 @@
 #include <yaml-cpp/yaml.h>
 
 #include "commands.h"
+#include "context.h"
 
 namespace app {
 
-    auto dispatch_command( std::string_view command, std::string_view arguments, std::vector<std::string> options ) {
+    auto dispatch_command( context &ctx, std::string_view command, std::string_view arguments, std::vector<std::string> options ) {
         if ( command == CMD_INIT ) {
             if ( !arguments.empty( ) ) {
-                if ( commands::default_init( arguments ) )
+                if ( commands::default_init( ctx, arguments ) )
                     return EXIT_SUCCESS;
 
                 commands::failed_command( command, "Can't create directories and files" );
@@ -21,7 +22,7 @@ namespace app {
         }
 
         if ( command == CMD_BUILD ) {
-            if ( commands::build_all( arguments ) )
+            if ( commands::build_all( ctx, arguments ) )
                 return EXIT_SUCCESS;
 
             return EXIT_FAILURE;
@@ -58,6 +59,12 @@ namespace app {
             return EXIT_SUCCESS;
         }
 
+        if ( command == CMD_CLEAN_ALL ) {
+            commands::clean_all( ctx );
+
+            return EXIT_SUCCESS;
+        }
+
         commands::invalid_command( command );
 
         return EXIT_FAILURE;
@@ -74,6 +81,7 @@ extern int main( int argc, char *argv[] ) {
     string command;
     string arguments;
     vector<string> options;
+    app::context context;
 
     xargs::args args;
     args.add_arg( "<command>", "Command", [&]( const auto &v ) { command = v; } )
@@ -99,5 +107,5 @@ extern int main( int argc, char *argv[] ) {
 
     LOG_DEBUG( APP_TAG, "Running command: %1 %2 %3", command, arguments, options );
 
-    return app::dispatch_command( command, arguments, options );
+    return app::dispatch_command( context, command, arguments, options );
 }
