@@ -1,6 +1,6 @@
-#include <experimental/filesystem>
 #include <fstream>
 #include <string_view>
+#include <filesystem>
 
 #include <xargs.hpp>
 
@@ -8,6 +8,7 @@
 
 #include "commands.h"
 #include "context.h"
+#include "common.h"
 
 namespace app {
 
@@ -17,7 +18,8 @@ namespace app {
                 if ( commands::default_init( ctx, arguments ) )
                     return EXIT_SUCCESS;
 
-                commands::failed_command( command, "Can't create directories and files" );
+                commands::failed_command_message( command, "Can't create directories and files" );
+                return EXIT_FAILURE;
             }
         }
 
@@ -59,15 +61,27 @@ namespace app {
             return EXIT_SUCCESS;
         }
 
-        if ( command == CMD_CLEAN_ALL ) {
-            commands::clean_all( ctx );
+        if ( command == CMD_CLEAN ) {
+            if ( commands::clean( ctx, arguments ) )
+                return EXIT_SUCCESS;
 
-            return EXIT_SUCCESS;
+            commands::failed_command_message( command, "Couldn't clean" );
+            return EXIT_FAILURE;
         }
 
-        commands::invalid_command( command );
+        commands::invalid_command_message( command );
 
         return EXIT_FAILURE;
+    }
+
+    auto init( context &ctx ) {
+        namespace fs = std::filesystem;
+
+        const auto default_build_path = fs::current_path( ) / common::DEFAULT_BUILD_DIR;
+
+        if ( ctx.build_path.empty( ) ) {
+            ctx.build_path = default_build_path;
+        }
     }
 
 } // namespace app
@@ -106,6 +120,8 @@ extern int main( int argc, char *argv[] ) {
     }
 
     LOG_DEBUG( APP_TAG, "Running command: %1 %2 %3", command, arguments, options );
+
+    app::init( context );
 
     return app::dispatch_command( context, command, arguments, options );
 }

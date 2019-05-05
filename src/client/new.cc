@@ -1,4 +1,4 @@
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string_view>
 
 #include <config.h>
@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace app {
 
@@ -22,7 +22,7 @@ namespace app {
             auto curr_path = fs::current_path( );
 
             if ( fs::exists( curr_path / DEFAULT_BUMP_FILE ) ) {
-                const auto src_path = curr_path / common::SOURCE_DIR;
+                const auto src_path = curr_path / common::DEFAULT_SOURCE_DIR;
 
                 bool res = true;
                 res &= fs::create_directory( src_path / target_name );

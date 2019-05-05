@@ -4,11 +4,13 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <sstream>
+#include <iterator>
 
 namespace string_utils {
 
     template <typename Range, typename Value = typename Range::value_type>
-    std::string join( Range const &elements, std::string_view delimiter ) {
+    std::string join( const Range &elements, std::string_view delimiter ) {
         std::ostringstream os;
         auto b = begin( elements ), e = end( elements );
 

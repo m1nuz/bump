@@ -1,4 +1,4 @@
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <string_view>
 
@@ -9,7 +9,7 @@
 #include "common.h"
 #include "context.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace app {
 
@@ -48,10 +48,10 @@ namespace app {
 
             auto curr_path = fs::current_path( );
 
-            const auto src_path = curr_path / project_name / common::SOURCE_DIR;
-            const auto include_path = curr_path / project_name / common::INCLUDE_DIR;
-            const auto external_path = curr_path / project_name / common::EXTERNAL_DIR;
-            const auto packages_path = curr_path / project_name / common::PACKAGE_DIR;
+            const auto src_path = curr_path / project_name / common::DEFAULT_SOURCE_DIR;
+            const auto include_path = curr_path / project_name / common::DEFAULT_INCLUDE_DIR;
+            const auto external_path = curr_path / project_name / common::DEFAULT_EXTERNAL_DIR;
+            const auto packages_path = curr_path / project_name / common::DEFAULT_PACKAGE_DIR;
             const auto project_info_path = curr_path / project_name / DEFAULT_BUMP_FILE;
 
             bool res = true;

@@ -9,7 +9,9 @@ namespace app {
     struct context {
         context( ) = default;
 
-        std::string cxx_compiller = "/usr/bin/g++";
+        std::string build_path;
+
+        std::string cxx_compiller = "g++";
         std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};
     };
 
