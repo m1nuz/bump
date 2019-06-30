@@ -24,6 +24,8 @@ namespace app {
         auto sys_exec( std::string_view cmd ) {
             using namespace std;
 
+            LOG_DEBUG( APP_TAG, "Execute: %1", cmd );
+
             array<char, 512> buffer;
             string result;
             shared_ptr<FILE> pipe( popen( cmd.data( ), "r" ), pclose );
@@ -41,6 +43,7 @@ namespace app {
         static auto compile_target( context &ctx, const std::string_view target_path, const std::vector<std::string> &input_files ) {
             using namespace std;
             namespace su = string_utils;
+            namespace au = algorithm_utils;
 
             fs::current_path( ctx.build_path );
 
@@ -58,12 +61,15 @@ namespace app {
                 fs::create_directories( work_dir );
                 fs::current_path( work_dir );
 
-                // const auto command = ctx.cxx_compiller + " -c -pipe " + f;
-                const auto command = su::join( vector<string>{ctx.cxx_compiller, "-c", "-pipe", f}, " " );
+                vector all_command_options{ctx.cxx_compiller};
+                au::join_copy( all_command_options, ctx.cxx_compile_options );
+                all_command_options.push_back( f );
+
+                const auto command = su::join( all_command_options, strings::WHITESPACE );
 
                 file_num++;
 
-                LOG_INFO( APP_TAG, "[%1/%2] Compile: '%3'", file_num, input_files.size( ), f );
+                LOG_MESSAGE( APP_TAG, "[%1/%2] Compile: '%3'", file_num, input_files.size( ), f );
 
                 const auto res = sys_exec( command );
                 if ( res.empty( ) ) {
@@ -81,15 +87,15 @@ namespace app {
 
             fs::current_path( ctx.build_path );
 
-            const auto all_compiled = su::join( input_files, " " );
+            const auto all_compiled = su::join( input_files, strings::WHITESPACE );
 
-            const auto command = ctx.cxx_compiller + " -o " + target_output.data() + " " + all_compiled;
+            const auto command = ctx.cxx_compiller + " -o " + target_output.data( ) + strings::WHITESPACE + all_compiled;
 
             const auto res = sys_exec( command );
             if ( res.empty( ) ) {
             }
 
-            LOG_INFO( APP_TAG, "Linked: '%1'", target_output );
+            LOG_MESSAGE( APP_TAG, "Build output: '%1'", target_output );
 
             return true;
         }
@@ -121,19 +127,7 @@ namespace app {
 
                 const auto compiled_files = compile_target( ctx, target_path, target_sources );
 
-                const auto all_compiled = su::join( compiled_files, " " );
-
-//                // Link files
-//                fs::current_path( ctx.build_path );
-//                {
-//                    const auto command = ctx.cxx_compiller + " -o " + target_name + " " + all_compiled;
-
-//                    const auto res = sys_exec( command );
-//                    if ( res.empty( ) ) {
-//                    }
-
-//                    LOG_INFO( APP_TAG, "Linked: '%1'", target_name );
-//                }
+                const auto all_compiled = su::join( compiled_files, strings::WHITESPACE );
 
                 link_target( ctx, target_name, compiled_files );
 
@@ -159,14 +153,27 @@ namespace app {
 
                 const auto project_name = conf["project"].as<std::string>( );
 
-                LOG_INFO( APP_TAG, "Build '%1'", project_name );
+                LOG_MESSAGE( APP_TAG, "Building... '%1'", project_name );
+
+                auto start_time = std::chrono::steady_clock::now( );
 
                 auto root_targets = conf["build"];
+                const auto size = root_targets.size( );
+
+                if ( size == 0 ) {
+                    LOG_ERROR( APP_TAG, "Build '%1' failed: no targets", project_name );
+                    return false;
+                }
+
                 for ( const auto &target : root_targets ) {
                     build_target( ctx, target, target_path );
                 }
 
-                LOG_INFO( APP_TAG, "Build '%1' done", project_name );
+                auto end_time = std::chrono::steady_clock::now( );
+
+                const std::chrono::duration<double> build_time = end_time - start_time;
+
+                LOG_MESSAGE( APP_TAG, "[%2s] Build '%1' done", project_name, build_time.count( ) );
 
                 return true;
             }

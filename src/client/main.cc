@@ -1,26 +1,28 @@
+#include <filesystem>
 #include <fstream>
 #include <string_view>
-#include <filesystem>
 
 #include <xargs.hpp>
 
 #include <yaml-cpp/yaml.h>
 
 #include "commands.h"
-#include "context.h"
 #include "common.h"
+#include "context.h"
 
 namespace app {
 
     auto dispatch_command( context &ctx, std::string_view command, std::string_view arguments, std::vector<std::string> options ) {
-        if ( command == CMD_INIT ) {
-            if ( !arguments.empty( ) ) {
-                if ( commands::default_init( ctx, arguments ) )
-                    return EXIT_SUCCESS;
 
-                commands::failed_command_message( command, "Can't create directories and files" );
-                return EXIT_FAILURE;
+        for ( const auto &opt : options ) {
+            if ( opt == OPT_VERBOSE ) {
+                log_level = LOG_LEVEL_DEBUG;
             }
+        }
+
+        if ( command == CMD_INIT ) {
+            if ( commands::default_init( ctx, arguments ) )
+                return EXIT_SUCCESS;
         }
 
         if ( command == CMD_BUILD ) {
@@ -86,7 +88,7 @@ namespace app {
 
 } // namespace app
 
-volatile int log_level = DEFAULT_LOG_LEVEL;
+volatile int log_level = LOG_LEVEL_MESSAGE;
 
 extern int main( int argc, char *argv[] ) {
 
@@ -110,7 +112,8 @@ extern int main( int argc, char *argv[] ) {
                          fprintf( stdout, "%s %s\n", APP_NAME, APP_VERSION );
                          exit( EXIT_SUCCESS );
                      } )
-        .add_option( OPT_BINARY, "Binary", [&]( ) { options.push_back( OPT_BINARY ); } );
+        .add_option( OPT_BINARY, "Binary", [&]( ) { options.push_back( OPT_BINARY ); } )
+        .add_option( OPT_VERBOSE, "Verbose", [&]( ) { options.push_back( OPT_VERBOSE ); } );
 
     args.dispath( argc, argv );
 

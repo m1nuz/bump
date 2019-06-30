@@ -13,6 +13,7 @@ namespace app {
 
         std::string cxx_compiller = "g++";
         std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};
+        std::vector<std::string> cxx_compile_options = {"-c", "-pipe"};
     };
 
 } // namespace app

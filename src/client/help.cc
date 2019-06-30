@@ -13,18 +13,20 @@ namespace app {
         auto help( std::string_view args ) {
             using namespace std;
 
-            vector<string> command_list = {
+            vector<string> commands_list = {
                 {CMD_INIT},
                 {CMD_BUILD},
                 {CMD_NEW},
                 {CMD_ADD},
                 {CMD_SHOW},
                 {CMD_INSTALL},
-                {CMD_SEARCH}
+                {CMD_SEARCH},
+                {CMD_CLEAN},
+                {CMD_CLEAN_ALL}
             };
 
             if ( args.empty( ) ) {
-                for ( const auto& c : command_list ) {
+                for ( const auto& c : commands_list ) {
                     cout << '\t' << c << '\n';
                 }
 
