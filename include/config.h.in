@@ -5,6 +5,7 @@ constexpr char APP_TAG[] = "bump";
 constexpr char DEFAULT_BUMP_FILE[] = ".bump.yml";
 constexpr char OPT_BINARY[] = "--bin";
 constexpr char OPT_LIBRARY[] = "--lib";
+constexpr char OPT_VERBOSE[] = "-V";
 
 
 constexpr char CMD_INIT[] = "init";

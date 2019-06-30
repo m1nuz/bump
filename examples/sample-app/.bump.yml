@@ -1,0 +1,15 @@
+project: sample-app
+build:
+- name: app
+  type: app
+  sources: all
+  build:
+  - sources:
+    - lib1.cpp
+    name: lib1
+    type: static_lib
+  - sources:
+    - lib2.cpp
+    name: lib2
+    type: shared_lib
+
