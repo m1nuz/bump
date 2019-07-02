@@ -13,6 +13,7 @@
 
 #include "common.h"
 #include "context.h"
+#include "shell.h"
 
 namespace fs = std::filesystem;
 namespace fs_utils = filesystem_utils;
@@ -20,25 +21,6 @@ namespace fs_utils = filesystem_utils;
 namespace app {
 
     namespace commands {
-
-        auto sys_exec( std::string_view cmd ) {
-            using namespace std;
-
-            LOG_DEBUG( APP_TAG, "Execute: %1", cmd );
-
-            array<char, 512> buffer;
-            string result;
-            shared_ptr<FILE> pipe( popen( cmd.data( ), "r" ), pclose );
-            if ( !pipe )
-                return result;
-
-            while ( !feof( pipe.get( ) ) ) {
-                if ( fgets( data( buffer ), size( buffer ), pipe.get( ) ) != nullptr )
-                    result += data( buffer );
-            }
-
-            return result;
-        }
 
         static auto compile_target( context &ctx, const std::string_view target_path, const std::vector<std::string> &input_files ) {
             using namespace std;
@@ -71,7 +53,7 @@ namespace app {
 
                 LOG_MESSAGE( APP_TAG, "[%1/%2] Compile: '%3'", file_num, input_files.size( ), f );
 
-                const auto res = sys_exec( command );
+                const auto res = shell::execute( command );
                 if ( res.empty( ) ) {
                 }
 
@@ -91,7 +73,7 @@ namespace app {
 
             const auto command = ctx.cxx_compiller + " -o " + target_output.data( ) + strings::WHITESPACE + all_compiled;
 
-            const auto res = sys_exec( command );
+            const auto res = shell::execute( command );
             if ( res.empty( ) ) {
             }
 

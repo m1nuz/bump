@@ -9,13 +9,13 @@
 
 namespace xargs {
     struct args {
-        typedef std::function<void ()> handler_no_value_type;
-        typedef std::function<void (const std::string& v)> handler_arg_type;
-        using handler_args_type = std::function<void (const std::vector<std::string>& v)>;
-        typedef std::tuple<std::string, std::string, handler_no_value_type> option_no_value_type;
-        typedef std::tuple<std::string, std::string, handler_arg_type> options_type;
-        typedef std::tuple<std::string, std::string, handler_arg_type> arg_type;
-        typedef std::tuple<std::string, std::vector<std::string>> args_type;
+        using handler_no_value_type = std::function<void ()>;
+        using handler_arg_type = std::function<bool (const std::string& )>;
+        //using handler_args_type = std::function<void (const std::vector<std::string>& )>;
+        using option_no_value_type = std::tuple<std::string, std::string, handler_no_value_type>;
+        using options_type = std::tuple<std::string, std::string, handler_arg_type>;
+        using arg_type = std::tuple<std::string, std::string, handler_arg_type> ;
+        using args_type = std::tuple<std::string, std::vector<std::string>>;
 
         args& add_option(const std::string &opt, const std::string &help, handler_arg_type h) {
             options_with_values.emplace_back(std::make_tuple(opt, help, h));
@@ -29,13 +29,12 @@ namespace xargs {
 
         args& add_arg(const std::string &arg, const std::string &desc, handler_arg_type h) {
             all_args.emplace_back(std::make_tuple(arg, desc, h));
-            args_usage.push_back(false);
             return *this;
         }
 
-        args& add_args(const std::string &arg_list, const std::string &desc, handler_args_type h) {
-            return *this;
-        }
+//        args& add_args(const std::string &arg_list, const std::string &desc, handler_args_type h) {
+//            return *this;
+//        }
 
         auto count() const {
             return all_args.size() + 1;
@@ -46,6 +45,8 @@ namespace xargs {
                 return std::get<0>(a).compare(std::get<0>(b));
             };
 
+            args_usage.resize( argc );
+
             std::sort(options_with_values.begin(), options_with_values.end(), compare);
             std::sort(options_no_values.begin(), options_no_values.end(), compare);
 
@@ -54,6 +55,7 @@ namespace xargs {
                 for (const auto &o : options_with_values) {
                     if (std::get<0>(o).compare(argv[i]) == 0 && ((i + 1) < argc) && argv[i + 1][0] != '-') {
                         std::get<2>(o)(argv[i + 1]);
+                        args_usage[i] = true;
                         p += 2;
                     }
                 }
@@ -61,18 +63,19 @@ namespace xargs {
                 for (const auto &o : options_no_values) {
                     if (std::get<0>(o).compare(argv[i]) == 0) {
                         std::get<2>(o)();
+                        args_usage[i] = true;
                         p++;
                     }
                 }
             }
 
             for (int i = 1; i < argc; i++) {
-                for (size_t j = 0; j < all_args.size(); j++)
-                    if (!args_usage[j]) {
-                        std::get<2>(all_args[j])(argv[i]);
-                        args_usage[j] = true;
+                for (const auto& arg : all_args) {
+                    if (!args_usage[i]) {
+                        args_usage[i] = std::get<2>(arg)(argv[i]);
                         break;
                     }
+                }
             }
         }
 

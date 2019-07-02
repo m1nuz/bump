@@ -12,17 +12,23 @@
 
 namespace app {
 
-    auto dispatch_command( context &ctx, std::string_view command, std::string_view arguments, std::vector<std::string> options ) {
-
+    auto apply_general_options( const std::vector<std::string> &options ) {
         for ( const auto &opt : options ) {
             if ( opt == OPT_VERBOSE ) {
                 log_level = LOG_LEVEL_DEBUG;
             }
         }
+    }
+
+    auto dispatch_command( context &ctx, std::string_view command, std::string_view arguments, const std::vector<std::string> &options ) {
+
+        apply_general_options( options );
 
         if ( command == CMD_INIT ) {
             if ( commands::default_init( ctx, arguments ) )
                 return EXIT_SUCCESS;
+
+            commands::failed_command_message( command, "Couldn't init" );
         }
 
         if ( command == CMD_BUILD ) {
@@ -51,10 +57,10 @@ namespace app {
         }
 
         if ( command == CMD_HELP ) {
-            if ( !commands::help( arguments ) )
-                return EXIT_FAILURE;
+            if ( commands::help( arguments ) )
+                return EXIT_SUCCESS;
 
-            return EXIT_SUCCESS;
+            return EXIT_FAILURE;
         }
 
         if ( command == CMD_SEARCH ) {
@@ -68,7 +74,20 @@ namespace app {
                 return EXIT_SUCCESS;
 
             commands::failed_command_message( command, "Couldn't clean" );
-            return EXIT_FAILURE;
+        }
+
+        if ( command == CMD_CLEAN_ALL ) {
+            if ( commands::clean_all( ctx ) )
+                return EXIT_SUCCESS;
+
+            commands::failed_command_message( command, "Couldn't clean all" );
+        }
+
+        if ( command == CMD_RUN_TARGET ) {
+            if ( commands::run_target( ctx, arguments ) )
+                return EXIT_SUCCESS;
+
+            commands::failed_command_message( command, "Couldn't run target" );
         }
 
         commands::invalid_command_message( command );
@@ -100,20 +119,32 @@ extern int main( int argc, char *argv[] ) {
     app::context context;
 
     xargs::args args;
-    args.add_arg( "<command>", "Command", [&]( const auto &v ) { command = v; } )
-        .add_arg( "<args>", "Arguments", [&]( const auto &v ) { arguments = v; } )
-        .add_option( "-h", "Display help",
+    args.add_arg( "<command>", "Command",
+                  [&]( const auto &v ) {
+                      const auto res = app::commands::is_command( v );
+                      if ( res ) {
+                          command = v;
+                      }
+
+                      return res;
+                  } )
+        .add_arg( "<args>", "Arguments",
+                  [&]( const auto &v ) {
+                      arguments = v;
+                      return true;
+                  } )
+        .add_option( OPT_HELP, OPT_HELP_DESCRIPTION,
                      [&]( ) {
                          puts( args.usage( argv[0] ).c_str( ) );
                          exit( EXIT_SUCCESS );
                      } )
-        .add_option( "-v", "Version",
+        .add_option( OPT_VERSION, OPT_VERSION_DESCRIPTION,
                      [&]( ) {
                          fprintf( stdout, "%s %s\n", APP_NAME, APP_VERSION );
                          exit( EXIT_SUCCESS );
                      } )
-        .add_option( OPT_BINARY, "Binary", [&]( ) { options.push_back( OPT_BINARY ); } )
-        .add_option( OPT_VERBOSE, "Verbose", [&]( ) { options.push_back( OPT_VERBOSE ); } );
+        .add_option( OPT_BINARY, OPT_BINARY_DESCRIPTION, [&]( ) { options.push_back( OPT_BINARY ); } )
+        .add_option( OPT_VERBOSE, OPT_VERBOSE_DESCRIPTION, [&]( ) { options.push_back( OPT_VERBOSE ); } );
 
     args.dispath( argc, argv );
 

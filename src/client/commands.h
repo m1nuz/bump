@@ -19,11 +19,14 @@ namespace app {
             exit( EXIT_FAILURE );
         }
 
+        auto is_command( const std::string_view cmd ) -> bool;
+
         auto default_init( context &ctx, std::string_view project_name ) -> bool;
         auto create_target( const std::string_view target_name ) -> bool;
         auto search_package( const std::string_view package_name ) -> bool;
         auto build_all( context &ctx, std::string_view arguments ) -> bool;
-        auto clean( context& ctx, std::string_view arguments ) -> bool;
+        auto run_target( context &ctx, const std::string_view target_name ) -> bool;
+        auto clean( context &ctx, std::string_view arguments ) -> bool;
         auto clean_all( context &ctx ) -> bool;
         auto help( std::string_view args ) -> bool;
 

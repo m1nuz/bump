@@ -6,6 +6,8 @@ set(SOURCES
     search.cc
     new.cc
     clean.cc
+    run_target.cc
+    shell.cc
     main.cc)
 
 configure_file("${SHARED_INCLUDE_DIR}/config.h.in" "${SHARED_INCLUDE_DIR}/config.h")
