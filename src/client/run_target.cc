@@ -35,7 +35,13 @@ namespace app {
                     const auto is_app = current_target_type == "app";
                     if ( is_app && ( target_name == current_target_name || target_name.empty( ) ) ) {
 
-                        const auto res = shell::run( ctx.build_path + fs::path::preferred_separator + current_target_name );
+                        LOG_DEBUG( APP_TAG, "Running target '%1'", current_target_name );
+
+                        const auto err = shell::run( ctx.build_path + fs::path::preferred_separator + current_target_name );
+                        if ( err ) {
+                            LOG_ERROR( APP_TAG, "Failed run target '%1'", current_target_name );
+                            return false;
+                        }
 
                         return true;
                     }
