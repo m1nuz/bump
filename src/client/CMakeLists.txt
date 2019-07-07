@@ -8,6 +8,7 @@ set(SOURCES
     clean.cc
     run_target.cc
     shell.cc
+    build_conf_parser.cc
     main.cc)
 
 configure_file("${SHARED_INCLUDE_DIR}/config.h.in" "${SHARED_INCLUDE_DIR}/config.h")

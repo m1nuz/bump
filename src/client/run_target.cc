@@ -17,7 +17,7 @@ namespace app {
         auto sys_exec( std::string_view cmd ) -> std::string;
         auto sys_run( std::string_view cmd ) -> int;
 
-        auto run_target( context &ctx, const std::string_view target_name ) -> bool {
+        auto run_target( bs::context &ctx, const std::string_view target_name ) -> bool {
             using namespace std;
 
             const auto target_path = fs::current_path( ).string( );

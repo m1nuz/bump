@@ -14,13 +14,13 @@ namespace app {
 
     namespace commands {
 
-        auto clean_packages( context &ctx ) {
+        auto clean_packages( bs::context &ctx ) {
         }
 
-        auto clean_target( context &ctx ) {
+        auto clean_target( bs::context &ctx ) {
         }
 
-        auto clean_build( context &ctx ) {
+        auto clean_build( bs::context &ctx ) {
             auto dir_list = fs_utils::get_directory_list( ctx.build_path );
 
             for ( const auto &f : dir_list ) {
@@ -35,11 +35,11 @@ namespace app {
             return true;
         }
 
-        auto clean_all( context &ctx ) -> bool {
+        auto clean_all( bs::context &ctx ) -> bool {
             return false;
         }
 
-        auto clean( context &ctx, std::string_view arguments ) -> bool {
+        auto clean( bs::context &ctx, std::string_view arguments ) -> bool {
             if ( arguments.empty( ) ) {
                 return clean_build( ctx );
             }

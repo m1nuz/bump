@@ -51,7 +51,7 @@ namespace app {
             return fs::exists( path );
         }
 
-        auto default_init( context &ctx, std::string_view project_name ) {
+        auto default_init( bs::context &ctx, std::string_view project_name ) {
             (void)ctx;
 
             auto curr_path = fs::current_path( );

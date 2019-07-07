@@ -14,10 +14,15 @@ namespace filesystem_utils {
         using namespace std;
         namespace fs = std::filesystem;
 
+        std::error_code err;
+        if ( !fs::exists( dir, err ) ) {
+            return {}; // TODO: return not expected
+        }
+
         vector<string> files;
         for ( auto &p : fs::recursive_directory_iterator( dir ) ) {
             if ( fs::is_regular_file( p ) ) {
-                if ( extensions.empty( ) ||
+                if ( !extensions.empty( ) &&
                      std::find( extensions.begin( ), extensions.end( ), p.path( ).extension( ).string( ) ) != extensions.end( ) ) {
                     files.push_back( p.path( ).string( ) );
                 }

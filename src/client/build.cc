@@ -20,9 +20,15 @@ namespace fs_utils = filesystem_utils;
 
 namespace app {
 
+    namespace bs {
+
+        auto parse_conf( bs::context &ctx, std::string_view conf_path ) -> bool;
+
+    } // namespace bs
+
     namespace commands {
 
-        static auto compile_target( context &ctx, const std::string_view target_path, const std::vector<std::string> &input_files ) {
+        static auto compile_target( bs::context &ctx, const std::string_view target_path, const std::vector<std::string> &input_files ) {
             using namespace std;
             namespace su = string_utils;
             namespace au = algorithm_utils;
@@ -35,9 +41,9 @@ namespace app {
             for ( const auto &f : input_files ) {
                 const auto compiled_file = fs::relative( fs::path{f}, fs::path{target_path} ).replace_extension( ".o" );
 
-                const auto work_directory = ctx.build_path / fs::path( compiled_file ).remove_filename( );
+                const auto work_path = ctx.build_path / fs::path( compiled_file ).remove_filename( );
 
-                auto work_dir = work_directory.string( );
+                auto work_dir = work_path.string( );
                 work_dir.pop_back( );
 
                 fs::create_directories( work_dir );
@@ -63,7 +69,7 @@ namespace app {
             return compiled_files;
         }
 
-        static auto link_target( context &ctx, const std::string_view target_output, const std::vector<std::string> &input_files ) {
+        static auto link_target( bs::context &ctx, const std::string_view target_output, const std::vector<std::string> &input_files ) {
             using namespace std;
             namespace su = string_utils;
 
@@ -82,85 +88,63 @@ namespace app {
             return true;
         }
 
-        static auto build_target( context &ctx, const YAML::Node &conf, const std::string_view target_path ) -> bool {
+        static auto build_target( bs::context &ctx, bs::target &target ) -> bool;
+
+        static auto build_target( bs::context &ctx, bs::target &target ) -> bool {
             using namespace std;
 
             const auto initial_dir = fs::current_path( );
 
-            if ( !ctx.build_path.empty( ) ) {
-                const auto target_name = conf["name"].as<string>( );
+            bool build_result = false;
 
-                vector<string> target_sources;
-                if ( conf["sources"].IsScalar( ) ) {
-                    const auto sources_value = conf["sources"].as<string>( );
-                    if ( sources_value == "all" ) {
-                        const auto &extensions = ctx.cxx_extensions;
-                        target_sources = fs_utils::get_directory_files_by_ext( string{target_path} + fs::path::preferred_separator + "src" +
-                                                                                   fs::path::preferred_separator + target_name,
-                                                                               extensions );
-                    }
-                } else if ( conf["sources"].IsSequence( ) ) {
-                    target_sources = conf["sources"].as<vector<string>>( );
-                } else {
-                    LOG_ERROR( APP_TAG, "Nothing to build for target %1", target_name );
-                }
+            if ( !target.sources.empty( ) ) {
+                const auto compiled_files = compile_target( ctx, initial_dir.string( ), target.sources );
 
-                namespace su = string_utils;
+                target.compiled_files = compiled_files;
 
-                const auto compiled_files = compile_target( ctx, target_path, target_sources );
-
-                const auto all_compiled = su::join( compiled_files, strings::WHITESPACE );
-
-                link_target( ctx, target_name, compiled_files );
-
-                fs::current_path( initial_dir );
-
-                return true;
+                build_result = !compiled_files.empty( );
+            } else {
+                build_result = false;
             }
 
-            LOG_ERROR( APP_TAG, "%1", "No build directory" );
+            fs::current_path( initial_dir );
 
-            return false;
+            return build_result;
         }
 
-        auto build_all( context &ctx, std::string_view arguments ) -> bool {
+        auto build_all( bs::context &ctx, std::string_view arguments ) -> bool {
 
             const auto target_path = fs::current_path( ).string( );
             const auto conf_path = target_path + fs::path::preferred_separator + DEFAULT_BUMP_FILE;
 
-            if ( fs::exists( conf_path ) ) {
-                auto conf = YAML::LoadFile( conf_path );
+            if ( bs::parse_conf( ctx, conf_path ) ) {
+                if ( !ctx.build_targets.empty( ) ) {
 
-                fs::create_directory( ctx.build_path );
+                    std::error_code err;
+                    if ( !fs::create_directory( ctx.build_path, err ) ) {
 
-                const auto project_name = conf["project"].as<std::string>( );
+                        for ( auto &t : ctx.build_targets ) {
+                            build_target( ctx, t );
+                        }
 
-                LOG_MESSAGE( APP_TAG, "Building... '%1'", project_name );
+                        for ( auto &t : ctx.build_targets ) {
+                            link_target( ctx, t.name, t.compiled_files );
+                        }
 
-                auto start_time = std::chrono::steady_clock::now( );
+                        return true;
+                    }
 
-                auto root_targets = conf["build"];
-                const auto size = root_targets.size( );
+                    LOG_ERROR( APP_TAG, "Could't create build directory %1", err.message( ) );
 
-                if ( size == 0 ) {
-                    LOG_ERROR( APP_TAG, "Build '%1' failed: no targets", project_name );
                     return false;
                 }
 
-                for ( const auto &target : root_targets ) {
-                    build_target( ctx, target, target_path );
-                }
+                LOG_ERROR( APP_TAG, "%1", "No targets to build" );
 
-                auto end_time = std::chrono::steady_clock::now( );
-
-                const std::chrono::duration<double> build_time = end_time - start_time;
-
-                LOG_MESSAGE( APP_TAG, "[%2s] Build '%1' done", project_name, build_time.count( ) );
-
-                return true;
+                return false;
             }
 
-            LOG_ERROR( APP_TAG, "%1", "No config for build" );
+            LOG_ERROR( APP_TAG, "Couldn't parse build config '%1'", conf_path );
 
             return false;
         }

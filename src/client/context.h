@@ -6,14 +6,40 @@
 
 namespace app {
 
-    struct context {
-        context( ) = default;
+    namespace bs {
 
-        std::string build_path;
+        enum class target_build_type {
+            BINARY_UNKNOWN,
+            BINARY_APPLICATION,
+            STATIC_LIBRARY,
+            SHARED_LIBRARY
+        };
 
-        std::string cxx_compiller = "g++";
-        std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};
-        std::vector<std::string> cxx_compile_options = {"-c", "-pipe"};
-    };
+        struct target;
+
+        struct target {
+            target( ) = default;
+
+            std::string name;
+            target_build_type type;
+
+            std::vector<std::string> sources;
+            std::vector<target> sub_targets; // dependent targets
+            std::vector<std::string> compiled_files;
+        };
+
+        struct context {
+            context( ) = default;
+
+            std::string build_path;
+
+            std::string cxx_compiller = "g++";
+            std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};
+            std::vector<std::string> cxx_compile_options = {"-c", "-pipe"};
+
+            std::vector<target> build_targets;
+        };
+
+    } // namespace bs
 
 } // namespace app

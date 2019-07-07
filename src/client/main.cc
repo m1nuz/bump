@@ -12,7 +12,7 @@
 
 namespace app {
 
-    auto apply_general_options( const std::vector<std::string> &options ) {
+    inline auto apply_general_options( const std::vector<std::string> &options ) {
         for ( const auto &opt : options ) {
             if ( opt == OPT_VERBOSE ) {
                 log_level = LOG_LEVEL_DEBUG;
@@ -20,7 +20,8 @@ namespace app {
         }
     }
 
-    auto dispatch_command( context &ctx, std::string_view command, std::string_view arguments, const std::vector<std::string> &options ) {
+    static auto dispatch_command( bs::context &ctx, std::string_view command, std::string_view arguments,
+                                  const std::vector<std::string> &options ) {
 
         apply_general_options( options );
 
@@ -95,7 +96,7 @@ namespace app {
         return EXIT_FAILURE;
     }
 
-    auto init( context &ctx ) {
+    static auto init( bs::context &ctx ) {
         namespace fs = std::filesystem;
 
         const auto default_build_path = fs::current_path( ) / common::DEFAULT_BUILD_DIR;
@@ -116,7 +117,7 @@ extern int main( int argc, char *argv[] ) {
     string command;
     string arguments;
     vector<string> options;
-    app::context context;
+    app::bs::context context;
 
     xargs::args args;
     args.add_arg( "<command>", "Command",
