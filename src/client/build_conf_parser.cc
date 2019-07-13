@@ -17,19 +17,26 @@ namespace app {
     namespace bs {
 
         constexpr char CONF_PROJECT_NAME[] = "project";
+        constexpr char CONF_CXX_FLAGS[] = "cxx-flags";
+        constexpr char CONF_CXX_COMPILLER[] = "cxx-compiler";
         constexpr char CONF_TARGET_LIST[] = "build";
         constexpr char CONF_TARGET_NAME[] = "name";
         constexpr char CONF_TARGET_SOURES[] = "sources";
         constexpr char CONF_TARGET_TYPE[] = "type";
+        constexpr char CONF_TARGET_LINK_LIBRARIES[] = "libaries";
+
+        constexpr char CXX_FLAG_SUPPURT_CXX17[] = "c++17";
+        constexpr char CXX_FLAG_ALL_WARNINGS[] = "all-warnings";
+        //constexpr char CXX_COMPLIER_LATEST[] = "latest";
 
         static auto get_build_type( std::string_view value ) {
-            if ( value == "app" )
+            if ( value == common::TARGET_TYPE_APP )
                 return target_build_type::BINARY_APPLICATION;
 
-            if ( value == "static_lib" )
+            if ( value == common::TARGET_TYPE_STATIC_LIB )
                 return target_build_type::STATIC_LIBRARY;
 
-            if ( value == "shared_lib" )
+            if ( value == common::TARGET_TYPE_SHARED_LIB )
                 return target_build_type::SHARED_LIBRARY;
 
             return target_build_type::BINARY_UNKNOWN;
@@ -64,10 +71,31 @@ namespace app {
                 current_target.sources = target_sources;
                 current_target.type = get_build_type( target_type );
 
+                if ( conf[CONF_TARGET_LINK_LIBRARIES].IsDefined( ) ) {
+                    current_target.link_libraries = conf[CONF_TARGET_LINK_LIBRARIES].as<std::vector<string>>( );
+                }
+
+                if ( current_target.type == target_build_type::BINARY_APPLICATION )
+                    current_target.output = current_target.name;
+
                 ctx.build_targets.push_back( current_target );
             }
 
             return false;
+        }
+
+        static auto flags_to_compiler_options( bs::context &ctx, const std::vector<std::string> &flags ) {
+            std::vector<std::string> options;
+
+            for ( const auto &f : flags ) {
+                if ( f == CXX_FLAG_SUPPURT_CXX17 )
+                    options.push_back( ctx.flags.support_cxx_17 );
+
+                if ( f == CXX_FLAG_ALL_WARNINGS )
+                    options.push_back( ctx.flags.verbosity_warnings_all );
+            }
+
+            return options;
         }
 
         auto parse_conf( bs::context &ctx, std::string_view conf_path ) -> bool {
@@ -83,6 +111,16 @@ namespace app {
             auto conf = YAML::LoadFile( conf_path.data( ) );
 
             const auto project_name = conf[CONF_PROJECT_NAME].as<string>( );
+
+            ctx.cxx_compiller =
+                conf[CONF_CXX_COMPILLER].IsDefined( ) ? conf[CONF_CXX_COMPILLER].as<string>( ) : common::DEFAULT_CXX_COMPILER;
+
+            if ( conf[CONF_CXX_FLAGS].IsSequence( ) ) {
+                const auto global_cxx_flags = conf[CONF_CXX_FLAGS].as<vector<string>>( );
+                const auto global_cxx_options = flags_to_compiler_options( ctx, global_cxx_flags );
+
+                algorithm_utils::join_move( ctx.cxx_compile_options, global_cxx_options );
+            }
 
             auto root_targets = conf[CONF_TARGET_LIST];
 

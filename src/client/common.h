@@ -10,13 +10,19 @@ namespace common {
     constexpr char DEFAULT_PACKAGE_DIR[] = ".package";
     constexpr char DEFAULT_BUILD_DIR[] = "build";
 
+    constexpr char DEFAULT_CXX_COMPILER[] = "g++";
 
+    constexpr char TARGET_TYPE_APP[] = "app";
+    constexpr char TARGET_TYPE_STATIC_LIB[] = "static_lib";
+    constexpr char TARGET_TYPE_SHARED_LIB[] = "shared_lib";
 
 } // namespace common
 
 namespace strings {
+
     constexpr char WHITESPACE[] = " ";
-}
+
+} // namespace strings
 
 namespace algorithm_utils {
 

@@ -69,21 +69,29 @@ namespace app {
             return compiled_files;
         }
 
-        static auto link_target( bs::context &ctx, const std::string_view target_output, const std::vector<std::string> &input_files ) {
+        static auto link_target( bs::context &ctx, bs::target &target ) {
             using namespace std;
             namespace su = string_utils;
+            namespace au = algorithm_utils;
 
             fs::current_path( ctx.build_path );
 
-            const auto all_compiled = su::join( input_files, strings::WHITESPACE );
+            const auto all_compiled = su::join( target.compiled_files, strings::WHITESPACE );
 
-            const auto command = ctx.cxx_compiller + " -o " + target_output.data( ) + strings::WHITESPACE + all_compiled;
+            vector all_command_options{ctx.cxx_compiller};
+            all_command_options.push_back( all_compiled );
+            all_command_options.push_back( "-o" );
+            all_command_options.push_back( std::string{target.name} );
+
+            au::join_copy( all_command_options, target.link_libraries );
+
+            const auto command = su::join( all_command_options, strings::WHITESPACE );
 
             const auto res = shell::execute( command );
             if ( res.empty( ) ) {
             }
 
-            LOG_MESSAGE( APP_TAG, "Build output: '%1'", target_output );
+            LOG_MESSAGE( APP_TAG, "Build output: '%1'", target.output );
 
             return true;
         }
@@ -113,14 +121,25 @@ namespace app {
         }
 
         auto build_all( bs::context &ctx, std::string_view arguments ) -> bool {
+            (void)arguments;
 
-            const auto target_path = fs::current_path( ).string( );
-            const auto conf_path = target_path + fs::path::preferred_separator + DEFAULT_BUMP_FILE;
+            ctx.base_path = fs::current_path( ).string( );
+            const auto conf_path = ctx.base_path + fs::path::preferred_separator + DEFAULT_BUMP_FILE;
 
             if ( bs::parse_conf( ctx, conf_path ) ) {
                 if ( !ctx.build_targets.empty( ) ) {
-
                     std::error_code err;
+
+                    const auto default_include_path = ctx.base_path + fs::path::preferred_separator + common::DEFAULT_INCLUDE_DIR;
+                    if ( fs::exists( default_include_path, err ) ) {
+                        ctx.cxx_compile_options.push_back( "-I" + default_include_path );
+                    }
+
+                    const auto default_external_path = ctx.base_path + fs::path::preferred_separator + common::DEFAULT_EXTERNAL_DIR;
+                    if ( fs::exists( default_external_path, err ) ) {
+                        ctx.cxx_compile_options.push_back( "-I" + default_external_path );
+                    }
+
                     if ( !fs::create_directory( ctx.build_path, err ) ) {
 
                         for ( auto &t : ctx.build_targets ) {
@@ -128,7 +147,7 @@ namespace app {
                         }
 
                         for ( auto &t : ctx.build_targets ) {
-                            link_target( ctx, t.name, t.compiled_files );
+                            link_target( ctx, t );
                         }
 
                         return true;
