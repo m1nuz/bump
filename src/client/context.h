@@ -17,6 +17,7 @@ namespace app {
 
             std::string name;
             std::string output;
+            std::string output_path;
             target_build_type type;
 
             std::vector<std::string> include_directories;

@@ -5,11 +5,11 @@ build:
   sources: all
   build:
   - sources:
-    - lib1.cpp
-    name: lib1
+    - sum.cpp
+    name: libsum
     type: static_lib
   - sources:
-    - lib2.cpp
-    name: lib2
+    - mul.cpp
+    name: libmul
     type: shared_lib
 
