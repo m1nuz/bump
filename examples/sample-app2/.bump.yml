@@ -1,0 +1,13 @@
+project: sample-app2
+build:
+- name: app
+  type: app
+  sources: all
+  build:
+  - sources: all
+    name: libsum10
+    type: static_lib
+  - sources: all
+    name: libmul10
+    type: shared_lib
+

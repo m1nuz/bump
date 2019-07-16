@@ -80,8 +80,14 @@ namespace app {
                 if ( conf[CONF_TARGET_SOURES].IsScalar( ) ) {
                     const auto sources_value = conf[CONF_TARGET_SOURES].as<string>( );
                     if ( sources_value == "all" ) {
+
                         const auto sources_path = string{target_path} + fs::path::preferred_separator + common::DEFAULT_SOURCE_DIR +
                                                   fs::path::preferred_separator + target_name;
+                        std::error_code err;
+                        if ( !fs::exists( sources_path, err ) ) {
+                            LOG_WARNING( APP_TAG, "Source path not exists %1", sources_path );
+                        }
+
                         const auto &extensions = ctx.cxx_extensions;
                         target_sources = fs_utils::get_directory_files_by_ext( sources_path, extensions );
                     }
