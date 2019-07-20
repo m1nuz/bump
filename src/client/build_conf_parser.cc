@@ -163,7 +163,7 @@ namespace app {
                 return false;
             }
 
-            auto start_time = chrono::steady_clock::now( );
+            auto start_time = bs::clock_type::now( );
 
             auto conf = YAML::LoadFile( conf_path.data( ) );
 
@@ -187,11 +187,11 @@ namespace app {
                 }
             }
 
-            auto end_time = chrono::steady_clock::now( );
+            auto end_time = bs::clock_type::now( );
 
-            const chrono::duration<double> build_time = end_time - start_time;
+            const chrono::duration<double> parse_time = end_time - start_time;
 
-            LOG_MESSAGE( APP_TAG, "[%2s] Parse '%1' done", conf_path, build_time.count( ) );
+            LOG_MESSAGE( APP_TAG, "[%2s] Parse '%1' done", conf_path, parse_time.count( ) );
 
             return true;
         }

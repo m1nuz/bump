@@ -3,12 +3,15 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <chrono>
 
 namespace app {
 
     namespace bs {
 
         enum class target_build_type { BINARY_UNKNOWN, BINARY_APPLICATION, STATIC_LIBRARY, SHARED_LIBRARY };
+
+        using clock_type = std::chrono::steady_clock;
 
         struct target;
 
@@ -38,6 +41,9 @@ namespace app {
 
             std::string base_path;
             std::string build_path;
+
+            clock_type::time_point build_start;
+            clock_type::time_point build_end;
 
             std::string cxx_compiller = "g++";
             std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};

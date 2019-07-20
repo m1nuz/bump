@@ -128,7 +128,7 @@ namespace app {
                     }
                 }
 
-                au::join_move(all_command_options, linker_paths);
+                au::join_move( all_command_options, linker_paths );
 
                 for ( const auto &st : target.sub_targets ) {
                     if ( st.type == bs::target_build_type::STATIC_LIBRARY || st.type == bs::target_build_type::SHARED_LIBRARY ) {
@@ -203,6 +203,10 @@ namespace app {
             ctx.base_path = fs::current_path( ).string( );
             const auto conf_path = ctx.base_path + fs::path::preferred_separator + DEFAULT_BUMP_FILE;
 
+            LOG_INFO( APP_TAG, "%1", "Build start..." );
+
+            ctx.build_start = bs::clock_type::now( );
+
             if ( bs::parse_conf( ctx, conf_path ) ) {
                 if ( !ctx.build_targets.empty( ) ) {
                     std::error_code err;
@@ -227,6 +231,12 @@ namespace app {
                         for ( auto &t : ctx.build_targets ) {
                             link_target( ctx, t );
                         }
+
+                        ctx.build_end = bs::clock_type::now( );
+
+                        const std::chrono::duration<double> build_time = ctx.build_end - ctx.build_start;
+
+                        LOG_INFO( APP_TAG, "Build end... [%1s]", build_time.count( ) );
 
                         return true;
                     }

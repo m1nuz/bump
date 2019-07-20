@@ -108,7 +108,7 @@ namespace app {
 
 } // namespace app
 
-volatile int log_level = LOG_LEVEL_MESSAGE;
+volatile int log_level = LOG_LEVEL_INFO;
 
 extern int main( int argc, char *argv[] ) {
 
