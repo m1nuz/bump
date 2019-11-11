@@ -4,6 +4,7 @@
 
 #include <xargs.hpp>
 
+#include <string_utils.h>
 #include <yaml-cpp/yaml.h>
 
 #include "commands.h"
@@ -145,7 +146,18 @@ extern int main( int argc, char *argv[] ) {
                          exit( EXIT_SUCCESS );
                      } )
         .add_option( OPT_BINARY, OPT_BINARY_DESCRIPTION, [&]( ) { options.push_back( OPT_BINARY ); } )
-        .add_option( OPT_VERBOSE, OPT_VERBOSE_DESCRIPTION, [&]( ) { options.push_back( OPT_VERBOSE ); } );
+        .add_option( OPT_VERBOSE, OPT_VERBOSE_DESCRIPTION, [&]( ) { options.push_back( OPT_VERBOSE ); } )
+        .add_option( OPT_JOBS, OPT_JOBS_DESCRIPTION, [&]( const std::string &val ) {
+            if ( !val.empty( ) ) {
+                const auto res = string_utils::to_int( val );
+                if ( res )
+                    context.jobs = static_cast<size_t>( res.value( ) );
+            }
+
+            options.push_back( OPT_VERBOSE );
+
+            return true;
+        } );
 
     args.dispath( argc, argv );
 

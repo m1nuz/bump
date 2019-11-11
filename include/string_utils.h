@@ -1,7 +1,9 @@
 #pragma once
 
 #include <algorithm>
+#include <charconv>
 #include <iterator>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -41,6 +43,14 @@ namespace string_utils {
             tokens.push_back( std::string( text.substr( start ) ) );
 
         return tokens;
+    }
+
+    inline std::optional<int> to_int( const std::string_view str ) noexcept {
+        int result;
+        if ( auto [p, ec] = std::from_chars( str.data( ), str.data( ) + str.size( ), result ); ec == std::errc( ) )
+            return result;
+
+        return {};
     }
 
 } // namespace string_utils

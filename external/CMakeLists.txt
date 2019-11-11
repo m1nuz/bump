@@ -34,3 +34,16 @@ ExternalProject_Add(
     INSTALL_DIR ""
     INSTALL_COMMAND ""
     )
+
+#set(STLAB_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/stlab/src/stlab CACHE INTERNAL "")
+
+#ExternalProject_Add(
+#    stlab
+#    PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/stlab
+#    GIT_REPOSITORY https://github.com/stlab/libraries.git
+#    GIT_TAG v1.4.1
+#    INSTALL_DIR ""
+#    INSTALL_COMMAND ""
+#    CMAKE_ARGS -Dstlab.testing=OFF
+#    )
+

@@ -10,10 +10,16 @@
 
 #include <fs_utils.h>
 #include <string_utils.h>
+#include <sys_utils.h>
 
 #include "common.h"
 #include "context.h"
 #include "shell.h"
+
+//#define BOOST_THREAD_PROVIDES_FUTURE
+//#define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
+//#define BOOST_THREAD_PROVIDES_FUTURE_WHEN_ALL_WHEN_ANY
+//#include <boost/thread/future.hpp>
 
 namespace fs = std::filesystem;
 namespace fs_utils = filesystem_utils;
@@ -71,7 +77,7 @@ namespace app {
 
                 LOG_MESSAGE( APP_TAG, "[%1/%2] Compile: '%3'", file_num, target.sources.size( ), f );
 
-                const auto res = shell::execute( command );
+                const auto res = sys::shell::execute( command );
                 if ( res.empty( ) ) {
                 }
 
@@ -158,7 +164,7 @@ namespace app {
 
             const auto command = su::join( all_command_options, strings::WHITESPACE );
 
-            const auto res = shell::execute( command );
+            const auto res = sys::shell::execute( command );
             if ( res.empty( ) ) {
             }
 
@@ -224,12 +230,42 @@ namespace app {
                     fs::create_directory( ctx.build_path, err );
 
                     if ( !err ) {
-                        for ( auto &t : ctx.build_targets ) {
-                            build_target( ctx, t );
-                        }
+                        if ( ctx.jobs == 0 || ctx.jobs == 1 ) {
+                            for ( auto &t : ctx.build_targets ) {
+                                build_target( ctx, t );
+                            }
 
-                        for ( auto &t : ctx.build_targets ) {
-                            link_target( ctx, t );
+                            for ( auto &t : ctx.build_targets ) {
+                                link_target( ctx, t );
+                            }
+                        } else {
+                            //                            sys::thread_pool pool{ctx.jobs};
+                            //                            for ( auto &t : ctx.build_targets ) {
+                            //                                pool.enqueue( build_target, ctx, t );
+                            //                            }
+
+                            //                            pool.wait_until_complete( );
+
+                            //                            for ( auto &t : ctx.build_targets ) {
+                            //                                pool.enqueue( link_target, ctx, t );
+                            //                            }
+                            //                            using namespace stlab;
+
+                            //                            std::vector<stlab::future<bool>> build_futures;
+
+                            //                            for ( auto &t : ctx.build_targets ) {
+                            //                                auto f = stlab::async( default_executor, [&]( ) { return build_target( ctx, t
+                            //                                ); } );
+
+                            //                                build_futures.push_back( f );
+                            //                            }
+
+                            //                            auto res = when_all( default_executor, build_futures );
+
+//                            auto f = when_all( build_futures );
+//                            auto done = f.then( []( decltype( f ) ) { LOG_INFO( APP_TAG, "%s", "Build done" ); } );
+
+                            //boost::wait_for_all()
                         }
 
                         ctx.build_end = bs::clock_type::now( );

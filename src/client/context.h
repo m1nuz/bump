@@ -15,7 +15,7 @@ namespace app {
 
         struct target;
 
-        struct target {
+        struct target final {
             target( ) = default;
 
             std::string name;
@@ -31,7 +31,7 @@ namespace app {
             std::vector<std::string> link_libraries;
         };
 
-        struct context {
+        struct context final {
             context( ) = default;
 
             struct {
@@ -44,6 +44,7 @@ namespace app {
 
             clock_type::time_point build_start;
             clock_type::time_point build_end;
+            size_t jobs = 0;
 
             std::string cxx_compiller = "g++";
             std::vector<std::string> cxx_extensions = {".cpp", ".cxx", ".cc"};

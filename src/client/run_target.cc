@@ -37,7 +37,7 @@ namespace app {
 
                         LOG_DEBUG( APP_TAG, "Running target '%1'", current_target_name );
 
-                        const auto err = shell::run( ctx.build_path + fs::path::preferred_separator + current_target_name );
+                        const auto err = sys::shell::run( ctx.build_path + fs::path::preferred_separator + current_target_name );
                         if ( err ) {
                             LOG_ERROR( APP_TAG, "Failed run target '%1'", current_target_name );
                             return false;

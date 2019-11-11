@@ -13,6 +13,8 @@ constexpr char OPT_BINARY_DESCRIPTION[] = "Binary";
 constexpr char OPT_LIBRARY[] = "--lib";
 constexpr char OPT_VERBOSE[] = "-V";
 constexpr char OPT_VERBOSE_DESCRIPTION[] = "Verbose";
+constexpr char OPT_JOBS[] = "-j";
+constexpr char OPT_JOBS_DESCRIPTION[] = "Jobs";
 
 constexpr char CMD_INIT[] = "init";
 constexpr char CMD_BUILD[] = "build";

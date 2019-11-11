@@ -13,6 +13,11 @@ set(SOURCES
 
 configure_file("${SHARED_INCLUDE_DIR}/config.h.in" "${SHARED_INCLUDE_DIR}/config.h")
 
+#set(Boost_USE_STATIC_LIBS OFF)
+#set(Boost_USE_MULTITHREADED ON)
+#set(Boost_USE_STATIC_RUNTIME OFF)
+#find_package(Boost 1.65 REQUIRED)
+
 add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 add_dependencies(${APP_NAME} yaml-cpp)
 
@@ -26,7 +31,9 @@ target_include_directories(${APP_NAME} PUBLIC
     ${SHARED_INCLUDE_DIR}
     ${APP_INCLUDES}
     ${YAMLPP_INCLUDE_DIRS}
+    ${STLAB_INCLUDE_DIRS}
     ${EXTERNAL_INCLUDE_DIR}
+#    ${Boost_INCLUDE_DIR}
 )
 
 target_compile_definitions(${APP_NAME} PUBLIC ${APP_DEFINES})
@@ -52,7 +59,9 @@ endif()
 target_link_libraries(${APP_NAME} PUBLIC
     ${APP_LIBRARIES}
     ${YAMLPP_LIBRARIES}
+#    ${Boost_LIBRARIES}
     stdc++fs
+    -pthread
 )
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION ${INSTALL_DIR})
