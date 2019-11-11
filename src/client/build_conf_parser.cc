@@ -23,7 +23,9 @@ namespace app {
         constexpr char CONF_TARGET_NAME[] = "name";
         constexpr char CONF_TARGET_SOURES[] = "sources";
         constexpr char CONF_TARGET_TYPE[] = "type";
+        constexpr char CONF_TARGET_RPATH[] = "rpath";
         constexpr char CONF_TARGET_LINK_LIBRARIES[] = "libaries";
+        constexpr char CONF_ALL_TAG[] = "all";
 
         constexpr char CXX_FLAG_SUPPURT_CXX17[] = "c++17";
         constexpr char CXX_FLAG_ALL_WARNINGS[] = "all-warnings";
@@ -75,11 +77,12 @@ namespace app {
                 const auto target_name = conf[CONF_TARGET_NAME].as<string>( );
                 const auto target_path = ctx.base_path;
                 const auto target_type = conf[CONF_TARGET_TYPE].as<string>( );
+                const auto target_runtime_path = conf[CONF_TARGET_RPATH] ? conf[CONF_TARGET_RPATH].as<string>( ) : string{};
 
                 vector<string> target_sources;
                 if ( conf[CONF_TARGET_SOURES].IsScalar( ) ) {
                     const auto sources_value = conf[CONF_TARGET_SOURES].as<string>( );
-                    if ( sources_value == "all" ) {
+                    if ( sources_value == CONF_ALL_TAG ) {
 
                         const auto sources_path = string{target_path} + fs::path::preferred_separator + common::DEFAULT_SOURCE_DIR +
                                                   fs::path::preferred_separator + target_name;
@@ -108,8 +111,9 @@ namespace app {
                 current_target.name = target_name;
                 current_target.sources = target_sources;
                 current_target.type = get_build_type( target_type );
+                current_target.run_time_path = target_runtime_path;
 
-                if ( conf[CONF_TARGET_LINK_LIBRARIES].IsDefined( ) ) {
+                if ( conf[CONF_TARGET_LINK_LIBRARIES] ) {
                     current_target.link_libraries = conf[CONF_TARGET_LINK_LIBRARIES].as<std::vector<string>>( );
                 }
 

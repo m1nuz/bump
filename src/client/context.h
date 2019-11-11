@@ -1,9 +1,9 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <chrono>
 
 namespace app {
 
@@ -26,9 +26,10 @@ namespace app {
             std::vector<std::string> include_directories;
 
             std::vector<std::string> sources;
-            std::vector<target> sub_targets; // dependent targets
+            std::vector<target> sub_targets; /// dependent targets
             std::vector<std::string> compiled_files;
             std::vector<std::string> link_libraries;
+            std::string run_time_path; /// rpath
         };
 
         struct context final {

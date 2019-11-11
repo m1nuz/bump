@@ -3,6 +3,7 @@ build:
 - name: app
   type: app
   sources: all
+  rpath: "."
   build:
   - sources: all
     name: libsum10

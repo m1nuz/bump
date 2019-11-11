@@ -121,20 +121,32 @@ namespace app {
                 all_command_options.push_back( ctx.cxx_compiller );
                 all_command_options.push_back( all_compiled );
 
-                vector<string> linker_paths;
+                vector<string> linker_options;
+                if ( !target.run_time_path.empty( ) ) {
+                    linker_options.push_back( "-Wl" );
 
+                    auto rpath = fs::absolute( target.run_time_path );
+
+                    linker_options.push_back( "-rpath=" + rpath.string( ) );
+                }
+
+                const auto all_linker_options = su::join( linker_options, "," );
+
+                all_command_options.push_back( all_linker_options );
+
+                vector<string> library_paths;
                 for ( const auto &st : target.sub_targets ) {
                     if ( st.type == bs::target_build_type::STATIC_LIBRARY || st.type == bs::target_build_type::SHARED_LIBRARY ) {
 
                         const auto link_path = "-L" + st.output_path;
 
-                        auto it = std::find( linker_paths.begin( ), linker_paths.end( ), link_path );
-                        if ( it == linker_paths.end( ) )
-                            linker_paths.push_back( "-L" + st.output_path );
+                        auto it = std::find( library_paths.begin( ), library_paths.end( ), link_path );
+                        if ( it == library_paths.end( ) )
+                            library_paths.push_back( "-L" + st.output_path );
                     }
                 }
 
-                au::join_move( all_command_options, linker_paths );
+                au::join_move( all_command_options, library_paths );
 
                 for ( const auto &st : target.sub_targets ) {
                     if ( st.type == bs::target_build_type::STATIC_LIBRARY || st.type == bs::target_build_type::SHARED_LIBRARY ) {
@@ -262,10 +274,11 @@ namespace app {
 
                             //                            auto res = when_all( default_executor, build_futures );
 
-//                            auto f = when_all( build_futures );
-//                            auto done = f.then( []( decltype( f ) ) { LOG_INFO( APP_TAG, "%s", "Build done" ); } );
+                            //                            auto f = when_all( build_futures );
+                            //                            auto done = f.then( []( decltype( f ) ) { LOG_INFO( APP_TAG, "%s", "Build done" );
+                            //                            } );
 
-                            //boost::wait_for_all()
+                            // boost::wait_for_all()
                         }
 
                         ctx.build_end = bs::clock_type::now( );
