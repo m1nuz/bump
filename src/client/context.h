@@ -40,6 +40,8 @@ namespace app {
                 std::string verbosity_warnings_all = "-pedantic -Wall";
             } flags;
 
+            std::string profile_name;
+
             std::string base_path;
             std::string build_path;
 

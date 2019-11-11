@@ -27,6 +27,10 @@ namespace app {
         constexpr char CONF_TARGET_LINK_LIBRARIES[] = "libaries";
         constexpr char CONF_ALL_TAG[] = "all";
 
+        constexpr char CONF_PROFILE_TAG[] = "profile";
+        constexpr char CONF_PROFILE_DEBUG[] = "DEBUG";
+        constexpr char CONF_PROFILE_RELEASE[] = "RELEASE";
+
         constexpr char CXX_FLAG_SUPPURT_CXX17[] = "c++17";
         constexpr char CXX_FLAG_ALL_WARNINGS[] = "all-warnings";
         // constexpr char CXX_COMPLIER_LATEST[] = "latest";
@@ -159,6 +163,23 @@ namespace app {
             return options;
         }
 
+        static auto process_default_debug_profile( bs::context &ctx ) {
+        }
+
+        static auto process_default_release_profile( bs::context &ctx ) {
+        }
+
+        static auto process_default_profile( bs::context &ctx, const std::string_view profile_name ) {
+            if ( profile_name == CONF_PROFILE_DEBUG ) {
+                ctx.cxx_compile_options.push_back( "-g" );
+                ctx.cxx_compile_options.push_back( "-O0" );
+            } else if ( profile_name == CONF_PROFILE_RELEASE ) {
+                ctx.cxx_compile_options.push_back( "-O3" );
+            } else {
+                /// Default profile
+            }
+        }
+
         auto parse_conf( bs::context &ctx, std::string_view conf_path ) -> bool {
             using namespace std;
 
@@ -172,9 +193,9 @@ namespace app {
             auto conf = YAML::LoadFile( conf_path.data( ) );
 
             const auto project_name = conf[CONF_PROJECT_NAME].as<string>( );
+            const auto profile_name = conf[CONF_PROFILE_TAG] ? conf[CONF_PROFILE_TAG].as<string>( ) : string{};
 
-            ctx.cxx_compiller =
-                conf[CONF_CXX_COMPILLER].IsDefined( ) ? conf[CONF_CXX_COMPILLER].as<string>( ) : common::DEFAULT_CXX_COMPILER;
+            ctx.cxx_compiller = conf[CONF_CXX_COMPILLER] ? conf[CONF_CXX_COMPILLER].as<string>( ) : common::DEFAULT_CXX_COMPILER;
 
             if ( conf[CONF_CXX_FLAGS].IsSequence( ) ) {
                 const auto global_cxx_flags = conf[CONF_CXX_FLAGS].as<vector<string>>( );
@@ -190,6 +211,11 @@ namespace app {
                     ctx.build_targets.push_back( current_target );
                 }
             }
+
+            if ( ctx.profile_name.empty( ) )
+                ctx.profile_name = profile_name;
+
+            process_default_profile( ctx, ctx.profile_name );
 
             auto end_time = bs::clock_type::now( );
 

@@ -146,6 +146,13 @@ extern int main( int argc, char *argv[] ) {
                          exit( EXIT_SUCCESS );
                      } )
         .add_option( OPT_BINARY, OPT_BINARY_DESCRIPTION, [&]( ) { options.push_back( OPT_BINARY ); } )
+        .add_option( "--build", "",
+                     [&]( const std::string &val ) {
+                         if ( !val.empty( ) ) {
+                             context.profile_name = string_utils::to_upper_copy( val );
+                         }
+                         return true;
+                     } )
         .add_option( OPT_VERBOSE, OPT_VERBOSE_DESCRIPTION, [&]( ) { options.push_back( OPT_VERBOSE ); } )
         .add_option( OPT_JOBS, OPT_JOBS_DESCRIPTION, [&]( const std::string &val ) {
             if ( !val.empty( ) ) {
@@ -153,8 +160,6 @@ extern int main( int argc, char *argv[] ) {
                 if ( res )
                     context.jobs = static_cast<size_t>( res.value( ) );
             }
-
-            options.push_back( OPT_VERBOSE );
 
             return true;
         } );

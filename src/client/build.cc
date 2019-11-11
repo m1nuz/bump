@@ -285,7 +285,7 @@ namespace app {
 
                         const std::chrono::duration<double> build_time = ctx.build_end - ctx.build_start;
 
-                        LOG_INFO( APP_TAG, "Build end... [%1s]", build_time.count( ) );
+                        LOG_INFO( APP_TAG, "Build end(%1)... [%2s]", ctx.profile_name, build_time.count( ) );
 
                         return true;
                     }

@@ -53,4 +53,11 @@ namespace string_utils {
         return {};
     }
 
+    inline std::string to_upper_copy( const std::string_view s ) {
+        std::string result;
+        result.reserve( s.size( ) );
+        std::transform( s.begin( ), s.end( ), std::back_inserter( result ), static_cast<int ( * )( int )>( std::toupper ) );
+        return result;
+    }
+
 } // namespace string_utils

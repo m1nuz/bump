@@ -1,4 +1,5 @@
 project: sample-app2
+profile: DEBUG
 build:
 - name: app
   type: app
